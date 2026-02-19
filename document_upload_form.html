@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Upload Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #667eea;
+            border-radius: 5px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .file-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-message.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Document Upload Form</h1>
+        <p class="subtitle">Please upload all required documents for processing</p>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="fir">FIR <span class="required">*</span></label>
+                <input type="file" id="fir" name="fir" accept=".pdf,.jpg,.jpeg,.png" required>
+                <div class="file-info">Accepted formats: PDF, JPG, PNG</div>
+            </div>
+
+            <div class="form-group">
+                <label for="spot_mahazer">SPOT MAHAZER <span class="required">*</span></label>
+                <input type="file" id="spot_mahazer" name="spot_mahazer" accept=".pdf,.jpg,.jpeg,.png" required>
+                <div class="file-info">Accepted formats: PDF, JPG, PNG</div>
+            </div>
+
+            <div class="form-group">
+                <label for="wound_certificate">WOUND CERTIFICATE <span class="required">*</span></label>
+                <input type="file" id="wound_certificate" name="wound_certificate" accept=".pdf,.jpg,.jpeg,.png" required>
+                <div class="file-info">Accepted formats: PDF, JPG, PNG</div>
+            </div>
+
+            <div class="form-group">
+                <label for="charge">CHARGE <span class="required">*</span></label>
+                <input type="file" id="charge" name="charge" accept=".pdf,.jpg,.jpeg,.png" required>
+                <div class="file-info">Accepted formats: PDF, JPG, PNG</div>
+            </div>
+
+            <div class="form-group">
+                <label for="mvi_report">MVI REPORT <span class="required">*</span></label>
+                <input type="file" id="mvi_report" name="mvi_report" accept=".pdf,.jpg,.jpeg,.png" required>
+                <div class="file-info">Accepted formats: PDF, JPG, PNG</div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="iv_policy">IV POLICY <span class="required">*</span></label>
+                    <input type="file" id="iv_policy" name="iv_policy" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="iv_dl">IV DL <span class="required">*</span></label>
+                    <input type="file" id="iv_dl" name="iv_dl" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="vi_rc">VI RC <span class="required">*</span></label>
+                    <input type="file" id="vi_rc" name="vi_rc" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="permit">PERMIT <span class="required">*</span></label>
+                    <input type="file" id="permit" name="permit" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="fitness">FITNESS <span class="required">*</span></label>
+                    <input type="file" id="fitness" name="fitness" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="aadhar">AADHAR OF PETITIONER <span class="required">*</span></label>
+                    <input type="file" id="aadhar" name="aadhar" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="pan_card">PAN CARD OF IV DRIVER <span class="required">*</span></label>
+                    <input type="file" id="pan_card" name="pan_card" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="seizure_mahazer">SEIZURE MAHAZER <span class="required">*</span></label>
+                    <input type="file" id="seizure_mahazer" name="seizure_mahazer" accept=".pdf,.jpg,.jpeg,.png" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="petition_copy">PETITION COPY <span class="required">*</span></label>
+                <input type="file" id="petition_copy" name="petition_copy" accept=".pdf,.jpg,.jpeg,.png" required>
+                <div class="file-info">Accepted formats: PDF, JPG, PNG</div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Upload Documents</button>
+        </form>
+
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const webhookURL = 'https://n8n.srv982383.hstgr.cloud/webhook/84cedd3e-f92f-47fe-8c6a-a59a31ebe082';
+
+        function showMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
+        }
+
+        function hideMessage() {
+            statusMessage.style.display = 'none';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading...';
+            showMessage('Uploading documents, please wait...', 'loading');
+
+            try {
+                // Create FormData object
+                const formData = new FormData();
+
+                // Get all file inputs
+                const fileInputs = form.querySelectorAll('input[type="file"]');
+                
+                // Append all files to FormData
+                fileInputs.forEach(input => {
+                    if (input.files[0]) {
+                        formData.append(input.name, input.files[0]);
+                    }
+                });
+
+                // Send to webhook
+                const response = await fetch(webhookURL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage('Documents uploaded successfully!', 'success');
+                    form.reset();
+                    console.log('Response:', result);
+                } else {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage(`Upload failed: ${error.message}`, 'error');
+            } finally {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Upload Documents';
+            }
+        });
+
+        // Update file input labels to show selected file name
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.files[0]) {
+                    const fileInfo = this.parentElement.querySelector('.file-info');
+                    if (fileInfo) {
+                        fileInfo.textContent = `Selected: ${this.files[0].name}`;
+                        fileInfo.style.color = '#28a745';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
