@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IT Support Portal — TUI India</title>
+  <link href="https://n8n.srv982383.hstgr.cloud/webhook/20f3a30e-23b3-423b-b5cb-9d6030ef7c8a" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #ffffff;
+      --off-white: #f5f5f5;
+      --light-grey: #e8e8e8;
+      --mid-grey: #9e9e9e;
+      --dark-grey: #3a3a3a;
+      --black: #111111;
+      --accent: #222222;
+      --border: #d0d0d0;
+      --error: #c0392b;
+      --success: #1a7a4a;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background-color: var(--off-white);
+      color: var(--black);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background-color: var(--black);
+      color: var(--white);
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #333;
+    }
+
+    .logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+
+    .logo span {
+      color: var(--mid-grey);
+    }
+
+    .header-tag {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--mid-grey);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* MAIN LAYOUT */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 620px;
+    }
+
+    /* TITLE BLOCK */
+    .title-block {
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--mid-grey);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--black);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--dark-grey);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    /* FORM */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--dark-grey);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    input, textarea, select {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: var(--white);
+      color: var(--black);
+      outline: none;
+      transition: border-color 0.15s ease;
+      width: 100%;
+      appearance: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--black);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: var(--mid-grey);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 130px;
+      line-height: 1.6;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    /* SUBMIT BUTTON */
+    .btn-submit {
+      background-color: var(--black);
+      color: var(--white);
+      border: none;
+      padding: 16px 32px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+      align-self: flex-start;
+      min-width: 200px;
+      text-align: center;
+    }
+
+    .btn-submit:hover { background-color: var(--dark-grey); }
+    .btn-submit:active { transform: translateY(1px); }
+    .btn-submit:disabled { background-color: var(--mid-grey); cursor: not-allowed; }
+
+    /* STATUS MESSAGES */
+    .status {
+      display: none;
+      padding: 14px 16px;
+      font-size: 13px;
+      border-left: 3px solid;
+    }
+
+    .status.success {
+      display: block;
+      background: #f0faf4;
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .status.error {
+      display: block;
+      background: #fdf0f0;
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    /* FOOTER */
+    footer {
+      background-color: var(--black);
+      color: var(--mid-grey);
+      padding: 20px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer span {
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.08em;
+    }
+
+    @media (max-width: 560px) {
+      .form-row { grid-template-columns: 1fr; }
+      header, footer { padding: 0 20px; }
+      main { padding: 40px 20px; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">TUI <span>|</span> IT Support</div>
+    <div class="header-tag">AI-Powered Helpdesk</div>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <div class="title-block">
+        <div class="eyebrow">Submit a Request</div>
+        <h1>How can we help you today?</h1>
+        <p class="subtitle">Describe your issue below. Our AI agent will analyze your query and route it to the right team instantly.</p>
+      </div>
+
+      <form id="supportForm" novalidate>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Atul Sharma" required />
+          </div>
+          <div class="field">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="you@company.com" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="category">Issue Category</label>
+          <select id="category" name="category">
+            <option value="">— Select a category —</option>
+            <option value="Network / Server">Network / Server</option>
+            <option value="Desktop Support">Desktop Support</option>
+            <option value="Application Support">Application Support</option>
+            <option value="User Account Management">User Account Management</option>
+            <option value="Network / Access">Network / Access</option>
+            <option value="Software Installation">Software Installation</option>
+            <option value="Email & Calendar">Email &amp; Calendar</option>
+            <option value="Backup & Recovery">Backup &amp; Recovery</option>
+            <option value="Information / Query">Information / Query</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="query">Your Query</label>
+          <textarea id="query" name="query" placeholder="Please describe your issue in as much detail as possible..." required></textarea>
+        </div>
+
+        <div id="statusMsg" class="status"></div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Submit Request</button>
+
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <span>© 2025 TUI India — IT Support Portal</span>
+    <span>Powered by n8n RAG Agent</span>
+  </footer>
+
+  <script>
+    const WEBHOOK_URL = "https://n8n.srv982383.hstgr.cloud/webhook-test/20f3a30e-23b3-423b-b5cb-9d6030ef7c8a";
+
+    const form = document.getElementById('supportForm');
+    const statusMsg = document.getElementById('statusMsg');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const category = document.getElementById('category').value;
+      const query = document.getElementById('query').value.trim();
+
+      statusMsg.className = 'status';
+      statusMsg.textContent = '';
+
+      if (!name || !email || !query) {
+        statusMsg.className = 'status error';
+        statusMsg.textContent = 'Please fill in all required fields before submitting.';
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        statusMsg.className = 'status error';
+        statusMsg.textContent = 'Please enter a valid email address.';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      const payload = {
+        name,
+        email,
+        category: category || 'Uncategorized',
+        query,
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          statusMsg.className = 'status success';
+          statusMsg.textContent = '✓ Your request has been submitted. Our AI agent is analyzing your query — you will receive a response at ' + email + '.';
+          form.reset();
+        } else {
+          throw new Error('Server responded with status ' + res.status);
+        }
+      } catch (err) {
+        statusMsg.className = 'status error';
+        statusMsg.textContent = 'Something went wrong. Please try again or contact support directly.';
+        console.error(err);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Request';
+      }
+    });
+  </script>
+
+</body>
+</html>

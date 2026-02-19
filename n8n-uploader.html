@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Upload → n8n</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --panel: #111118;
+      --border: #2a2a3a;
+      --accent: #7c6aff;
+      --accent2: #ff6ac2;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --success: #4ade80;
+      --error: #f87171;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glows */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px; left: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,106,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+    }
+
+    .label-tag {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(124,106,255,0.1);
+      border: 1px solid rgba(124,106,255,0.3);
+      padding: 0.3em 0.7em;
+      border-radius: 3px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      margin-top: 0.6rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 300;
+    }
+
+    .webhook-badge {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      overflow: hidden;
+    }
+
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+      flex-shrink: 0;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .webhook-url {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--panel);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .drop-zone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(124,106,255,0.05) 0%, rgba(255,106,194,0.05) 100%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .drop-zone:hover::before,
+    .drop-zone.drag-over::before {
+      opacity: 1;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(124,106,255,0.15);
+    }
+
+    .drop-zone.drag-over {
+      border-style: solid;
+    }
+
+    .drop-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+      filter: grayscale(0.3);
+    }
+
+    .drop-text {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    .drop-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .browse-btn {
+      display: inline-block;
+      margin-top: 1.2rem;
+      padding: 0.5em 1.2em;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      border: 1px solid rgba(124,106,255,0.4);
+      border-radius: 4px;
+      background: rgba(124,106,255,0.08);
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+
+    .browse-btn:hover {
+      background: rgba(124,106,255,0.18);
+      border-color: var(--accent);
+    }
+
+    #fileInput { display: none; }
+
+    /* Preview grid */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1.2rem;
+    }
+
+    .preview-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .preview-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preview-item .remove {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-size: 12px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background 0.2s;
+    }
+
+    .preview-item .remove:hover { background: var(--error); }
+
+    .preview-item .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .preview-item:hover .overlay { opacity: 1; }
+
+    .file-name {
+      font-size: 0.65rem;
+      font-family: 'Space Mono', monospace;
+      color: #fff;
+      padding: 0 0.3rem;
+      text-align: center;
+      word-break: break-all;
+    }
+
+    /* Options */
+    .options {
+      margin-top: 1.2rem;
+      padding: 1rem 1.2rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .options label {
+      display: block;
+      font-size: 0.75rem;
+      font-family: 'Space Mono', monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.4rem;
+    }
+
+    .options input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.5em 0.7em;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .options input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    /* Submit */
+    .submit-btn {
+      margin-top: 1.2rem;
+      width: 100%;
+      padding: 1rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover::after { background: rgba(255,255,255,0.1); }
+    .submit-btn:active { transform: scale(0.98); }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Progress */
+    .progress-bar {
+      margin-top: 0.8rem;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      overflow: hidden;
+      display: none;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+
+    /* Status */
+    .status {
+      margin-top: 1rem;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      display: none;
+      animation: fadeIn 0.3s ease;
+      word-break: break-word;
+    }
+
+    .status.success {
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.3);
+      color: var(--success);
+    }
+
+    .status.error {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      color: var(--error);
+    }
+
+    /* Count badge */
+    .count-badge {
+      display: inline-block;
+      background: rgba(124,106,255,0.2);
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.1em 0.5em;
+      border-radius: 3px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="label-tag">n8n Webhook</div>
+    <h1>Upload <span>Images</span></h1>
+    <p class="subtitle">Drop your files below — they'll be sent straight to your workflow.</p>
+    <div class="webhook-badge">
+      <span class="dot"></span>
+      <span class="webhook-url">n8n.srv982383.hstgr.cloud/webhook-test/_</span>
+    </div>
+  </header>
+
+  <!-- Drop Zone -->
+  <div class="drop-zone" id="dropZone">
+    <span class="drop-icon">🖼️</span>
+    <div class="drop-text">Drag & drop images here</div>
+    <div class="drop-hint">PNG, JPG, GIF, WEBP — multiple files OK</div>
+    <button class="browse-btn" id="browseBtn" type="button">Browse files</button>
+    <input type="file" id="fileInput" accept="image/*" multiple />
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-grid" id="previewGrid"></div>
+
+  <!-- Optional note -->
+  <div class="options" id="optionsPanel" style="display:none">
+    <label for="noteInput">Note (optional)</label>
+    <input type="text" id="noteInput" placeholder="Add a note sent with the images…" />
+  </div>
+
+  <!-- Submit -->
+  <button class="submit-btn" id="submitBtn" disabled>
+    Send to n8n <span id="countBadge" class="count-badge" style="display:none">0</span>
+  </button>
+
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="status" id="statusMsg"></div>
+</div>
+
+<script>
+  const WEBHOOK = 'https://n8n.srv982383.hstgr.cloud/webhook-test/_';
+
+  const dropZone    = document.getElementById('dropZone');
+  const fileInput   = document.getElementById('fileInput');
+  const browseBtn   = document.getElementById('browseBtn');
+
+  browseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  dropZone.addEventListener('click', (e) => {
+    if (e.target !== browseBtn) fileInput.click();
+  });
+  const previewGrid = document.getElementById('previewGrid');
+  const submitBtn   = document.getElementById('submitBtn');
+  const countBadge  = document.getElementById('countBadge');
+  const progressBar = document.getElementById('progressBar');
+  const progressFill= document.getElementById('progressFill');
+  const statusMsg   = document.getElementById('statusMsg');
+  const optionsPanel= document.getElementById('optionsPanel');
+  const noteInput   = document.getElementById('noteInput');
+
+  let files = [];
+
+  // Drag & drop
+  ['dragenter','dragover'].forEach(e => {
+    dropZone.addEventListener(e, ev => {
+      ev.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+  });
+
+  ['dragleave','drop'].forEach(e => {
+    dropZone.addEventListener(e, ev => {
+      ev.preventDefault();
+      dropZone.classList.remove('drag-over');
+    });
+  });
+
+  dropZone.addEventListener('drop', e => {
+    const dropped = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    addFiles(dropped);
+  });
+
+  fileInput.addEventListener('change', () => {
+    addFiles(Array.from(fileInput.files));
+    fileInput.value = '';
+  });
+
+  function addFiles(newFiles) {
+    newFiles.forEach(file => {
+      if (files.find(f => f.name === file.name && f.size === file.size)) return;
+      files.push(file);
+      renderPreview(file, files.length - 1);
+    });
+    updateUI();
+  }
+
+  function renderPreview(file, idx) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      item.dataset.idx = idx;
+      item.innerHTML = `
+        <img src="${e.target.result}" alt="${file.name}" />
+        <div class="overlay"><span class="file-name">${file.name}</span></div>
+        <button class="remove" title="Remove">✕</button>
+      `;
+      item.querySelector('.remove').addEventListener('click', () => removeFile(idx));
+      previewGrid.appendChild(item);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeFile(idx) {
+    files.splice(idx, 1);
+    previewGrid.innerHTML = '';
+    files.forEach((f, i) => renderPreview(f, i));
+    updateUI();
+  }
+
+  function updateUI() {
+    const has = files.length > 0;
+    submitBtn.disabled = !has;
+    countBadge.style.display = has ? 'inline-block' : 'none';
+    countBadge.textContent = files.length;
+    optionsPanel.style.display = has ? 'block' : 'none';
+    statusMsg.style.display = 'none';
+  }
+
+  // Submit — all images in ONE request
+  submitBtn.addEventListener('click', async () => {
+    if (!files.length) return;
+
+    submitBtn.disabled = true;
+    progressBar.style.display = 'block';
+    progressFill.style.width = '30%';
+    statusMsg.style.display = 'none';
+
+    try {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append('files', file, file.name);
+      });
+
+      formData.append('count', files.length);
+      if (noteInput.value) formData.append('note', noteInput.value);
+
+      progressFill.style.width = '60%';
+
+      const res = await fetch(WEBHOOK, { method: 'POST', body: formData });
+
+      progressFill.style.width = '100%';
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      setTimeout(() => { progressBar.style.display = 'none'; }, 600);
+
+      showStatus('success', `✓ ${files.length} image${files.length !== 1 ? 's' : ''} sent in one request to n8n!`);
+      files = [];
+      previewGrid.innerHTML = '';
+      noteInput.value = '';
+      updateUI();
+
+    } catch (err) {
+      progressFill.style.width = '100%';
+      setTimeout(() => { progressBar.style.display = 'none'; }, 600);
+      showStatus('error', `✗ Failed to send: ${err.message}`);
+    }
+
+    submitBtn.disabled = false;
+  });
+
+  function showStatus(type, msg) {
+    statusMsg.className = `status ${type}`;
+    statusMsg.textContent = msg;
+    statusMsg.style.display = 'block';
+  }
+</script>
+</body>
+</html>
